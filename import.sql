@@ -1,1 +1,2 @@
-ALTER TABLE nd_characters MODIFY COLUMN clothing LONGTEXT DEFAULT '[]';
+ALTER TABLE nd_characters
+ADD COLUMN clothing LONGTEXT DEFAULT '[]';
