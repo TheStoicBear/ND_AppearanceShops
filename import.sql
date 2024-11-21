@@ -1,0 +1,1 @@
+ALTER TABLE nd_characters MODIFY COLUMN clothing LONGTEXT DEFAULT '[]';
