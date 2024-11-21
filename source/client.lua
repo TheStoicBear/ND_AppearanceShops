@@ -79,6 +79,28 @@ local function startChange(coords, options, i)
             ped = PlayerPedId()
             fivemAppearance:setPedTattoos(ped, oldAppearance.tattoos)
             fivemAppearance:setPedAppearance(ped, oldAppearance.appearance)
+                -- Retrieve appearance data
+                local components = fivemAppearance:getPedComponents(ped)
+                local props = fivemAppearance:getPedProps(ped)
+                local tattoos = fivemAppearance:getPedTattoos(ped)
+                local faceFeatures = fivemAppearance:getPedFaceFeatures(ped)
+                local headOverlays = fivemAppearance:getPedHeadOverlays(ped)
+                local hair = fivemAppearance:getPedHair(ped)
+            
+                -- Package the data into a table
+                local clothingData = {
+                    components = components,
+                    props = props,
+                    tattoos = tattoos,
+                    faceFeatures = faceFeatures,
+                    headOverlays = headOverlays,
+                    hair = hair
+                }
+            
+                -- Serialize the data into JSON format
+                local clothingDataJson = json.encode(clothingData)
+                -- Send the data to the server to save
+                TriggerServerEvent('fivemAppearance:saveCharacterOutfit', clothingDataJson)
         end
     end, options)
 end
@@ -156,6 +178,31 @@ lib.registerContext({
                 end
                 fivemAppearance:setPedAppearance(cache.ped, selected.appearance)
                 TriggerServerEvent("ND_AppearanceShops:updateAppearance", fivemAppearance:getPedAppearance(cache.ped))
+                -- Get the player's ped (character)
+                local ped = PlayerPedId()
+            
+                -- Retrieve appearance data
+                local components = fivemAppearance:getPedComponents(ped)
+                local props = fivemAppearance:getPedProps(ped)
+                local tattoos = fivemAppearance:getPedTattoos(ped)
+                local faceFeatures = fivemAppearance:getPedFaceFeatures(ped)
+                local headOverlays = fivemAppearance:getPedHeadOverlays(ped)
+                local hair = fivemAppearance:getPedHair(ped)
+            
+                -- Package the data into a table
+                local clothingData = {
+                    components = components,
+                    props = props,
+                    tattoos = tattoos,
+                    faceFeatures = faceFeatures,
+                    headOverlays = headOverlays,
+                    hair = hair
+                }
+            
+                -- Serialize the data into JSON format
+                local clothingDataJson = json.encode(clothingData)
+                -- Send the data to the server to save
+                TriggerServerEvent('fivemAppearance:saveCharacterOutfit', clothingDataJson)
             end
         },
         {
