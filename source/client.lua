@@ -197,5 +197,69 @@ AddEventHandler("onResourceStop", function(resource)
     SetResourceKvp(wardrobeId, json.encode(wardrobe))
 end)
 
+-- Client-side event to apply the clothing data
+RegisterNetEvent('fivemAppearance:applyCharacterOutfit')
+AddEventHandler('fivemAppearance:applyCharacterOutfit', function(clothingDataJson)
+    -- Decode the received JSON data
+    local clothingData = json.decode(clothingDataJson)
+
+    if not clothingData then
+        print("Error: Failed to decode clothing data.")
+        return
+    end
+
+    -- Get the player's ped (character)
+    local ped = PlayerPedId()
+
+    -- Apply the clothing data to the player's character
+    fivemAppearance:setPedComponents(ped, clothingData.components)
+    fivemAppearance:setPedProps(ped, clothingData.props)
+    fivemAppearance:setPedTattoos(ped, clothingData.tattoos)
+    fivemAppearance:setPedFaceFeatures(ped, clothingData.faceFeatures)
+    fivemAppearance:setPedHeadOverlays(ped, clothingData.headOverlays)
+    fivemAppearance:setPedHair(ped, clothingData.hair)
+
+    print("Clothing data applied to player.")
+end)
+
+-- Listen for the ND:characterLoaded event (local client event)
+RegisterNetEvent("ND:characterLoaded")
+AddEventHandler("ND:characterLoaded", function(character)
+    if character then
+        -- Debug output
+        print("Character Loaded:", character.metadata, character.lastname)
+    -- Trigger the server to get the saved character outfit
+    TriggerServerEvent('fivemAppearance:getCharacterOutfit')
+        -- Call the openWardrobe export from ND_AppearanceShops
+        exports["ND_AppearanceShops"]:openWardrobe()
+    else
+        print("Character data not received!")
+    end
+end)
+
+-- Listen for the server event to load character outfit
+RegisterNetEvent('fivemAppearance:loadCharacterOutfit')
+AddEventHandler('fivemAppearance:loadCharacterOutfit', function(clothingData)
+    -- Check if the clothing data is valid (it should be a JSON string)
+    if clothingData then
+        -- Deserialize the clothing data from JSON
+        local clothing = json.decode(clothingData)
+
+        -- Check if the clothing data is valid
+        if clothing then
+            -- Get the player's ped
+            local ped = PlayerPedId()
+
+            -- Apply the saved appearance data (clothing, props, tattoos, etc.)
+            fivemAppearance:setPedAppearance(ped, clothing)
+            print("Clothing data applied to player")
+        else
+            print("Error: Failed to decode clothing data.")
+        end
+    else
+        print("No clothing data received from the server.")
+    end
+end)
+
 exports("openWardrobe", openWardrobe)
 exports("createClothingStore", createClothingStore)
