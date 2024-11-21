@@ -277,8 +277,7 @@ AddEventHandler("ND:characterLoaded", function(character)
         print("Character Loaded:", character.metadata, character.lastname)
     -- Trigger the server to get the saved character outfit
     TriggerServerEvent('fivemAppearance:getCharacterOutfit')
-        -- Call the openWardrobe export from ND_AppearanceShops
-        exports["ND_AppearanceShops"]:openWardrobe()
+
     else
         print("Character data not received!")
     end
