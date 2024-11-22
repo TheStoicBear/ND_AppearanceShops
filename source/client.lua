@@ -202,7 +202,7 @@ lib.registerContext({
                 -- Serialize the data into JSON format
                 local clothingDataJson = json.encode(clothingData)
                 -- Send the data to the server to save
-                TriggerServerEvent('fivemAppearance:saveCharacterOutfit', clothingDataJson)
+                TriggerServerEvent('ND_AppearanceShops:saveCharacterOutfit', source, clothingData)
             end
         },
         {
@@ -276,16 +276,17 @@ AddEventHandler("ND:characterLoaded", function(character)
         -- Debug output
         print("Character Loaded:", character.metadata, character.lastname)
     -- Trigger the server to get the saved character outfit
-    TriggerServerEvent('fivemAppearance:getCharacterOutfit')
-
+    TriggerServerEvent('ND_AppearanceShops:getCharacterOutfit')
+        -- Call the openWardrobe export from ND_AppearanceShops
+        exports["ND_AppearanceShops"]:openWardrobe()
     else
         print("Character data not received!")
     end
 end)
 
 -- Listen for the server event to load character outfit
-RegisterNetEvent('fivemAppearance:loadCharacterOutfit')
-AddEventHandler('fivemAppearance:loadCharacterOutfit', function(clothingData)
+RegisterNetEvent('ND_AppearanceShops:loadCharacterOutfit')
+AddEventHandler('ND_AppearanceShops:loadCharacterOutfit', function(clothingData)
     -- Check if the clothing data is valid (it should be a JSON string)
     if clothingData then
         -- Deserialize the clothing data from JSON
