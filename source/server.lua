@@ -31,7 +31,7 @@ lib.callback.register("ND_AppearanceShops:clothingPurchase", function(src, store
     })
 
     -- Call an event to save the clothing for the player
-    TriggerEvent("fivemAppearance:saveCharacterOutfit", src, clothing)
+    TriggerEvent("ND_AppearanceShops:saveCharacterOutfit", src, clothing)
 
     return true
 end)
@@ -49,10 +49,14 @@ RegisterNetEvent("ND_AppearanceShops:updateAppearance", function(clothing)
 end)
 
 -- Server-side event to save the player's clothing data
-RegisterNetEvent('fivemAppearance:saveCharacterOutfit')
-AddEventHandler('fivemAppearance:saveCharacterOutfit', function(src, clothingData)
+RegisterNetEvent('ND_AppearanceShops:saveCharacterOutfit')
+AddEventHandler('ND_AppearanceShops:saveCharacterOutfit', function(src, clothingData)
+    local src = source
     local player = NDCore.getPlayer(src)  -- Retrieve player object
 
+    -- Log the raw received data
+    print("Received clothingData:", clothingData)
+    print("Type of clothingData:", type(clothingData))
     if not player then
         print("Error: Player not found for source " .. src)
         return
@@ -69,7 +73,9 @@ AddEventHandler('fivemAppearance:saveCharacterOutfit', function(src, clothingDat
 
     -- Convert clothing data to JSON string for saving
     local clothingDataJson = json.encode(clothingData)
-
+    print("Clothing Data :", clothingData)
+    print("Clothing Data JSON:", clothingDataJson)
+    
     -- Save clothing data to the database
     local characterId = player.id
     MySQL.Async.execute('UPDATE nd_characters SET clothing = @clothing WHERE charid = @charid', {
@@ -85,8 +91,8 @@ AddEventHandler('fivemAppearance:saveCharacterOutfit', function(src, clothingDat
 end)
 
 -- Server-side event to send clothing data to the client
-RegisterNetEvent('fivemAppearance:getCharacterOutfit')
-AddEventHandler('fivemAppearance:getCharacterOutfit', function()
+RegisterNetEvent('ND_AppearanceShops:getCharacterOutfit')
+AddEventHandler('ND_AppearanceShops:getCharacterOutfit', function()
     local src = source
     local player = NDCore.getPlayer(src)  -- Retrieve player object
 
@@ -101,7 +107,7 @@ AddEventHandler('fivemAppearance:getCharacterOutfit', function()
     }, function(clothingDataJson)
         if clothingDataJson then
             -- Send clothing data to the client to apply
-            TriggerClientEvent('fivemAppearance:applyCharacterOutfit', src, clothingDataJson)
+            TriggerClientEvent('ND_AppearanceShops:applyCharacterOutfit', src, clothingDataJson)
         else
             print("No clothing data found for player " .. player.firstname .. " " .. player.lastname)
         end
