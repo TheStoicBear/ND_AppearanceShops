@@ -100,7 +100,7 @@ local function startChange(coords, options, i)
                 -- Serialize the data into JSON format
                 local clothingDataJson = json.encode(clothingData)
                 -- Send the data to the server to save
-                TriggerServerEvent('fivemAppearance:saveCharacterOutfit', clothingDataJson)
+                TriggerServerEvent('ND_AppearanceShops:saveCharacterOutfit', clothingDataJson)
         end
     end, options)
 end
