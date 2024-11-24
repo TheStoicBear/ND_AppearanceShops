@@ -181,16 +181,18 @@ lib.registerContext({
                 -- Get the player's ped (character)
                 local ped = PlayerPedId()
             
-                -- Retrieve appearance data
+                -- Retrieve the player's updated appearance data
+                local model = fivemAppearance:getPedModel(ped)
                 local components = fivemAppearance:getPedComponents(ped)
                 local props = fivemAppearance:getPedProps(ped)
                 local tattoos = fivemAppearance:getPedTattoos(ped)
                 local faceFeatures = fivemAppearance:getPedFaceFeatures(ped)
                 local headOverlays = fivemAppearance:getPedHeadOverlays(ped)
                 local hair = fivemAppearance:getPedHair(ped)
-            
+    
                 -- Package the data into a table
                 local clothingData = {
+                    model = model,
                     components = components,
                     props = props,
                     tattoos = tattoos,
@@ -198,13 +200,16 @@ lib.registerContext({
                     headOverlays = headOverlays,
                     hair = hair
                 }
-            
+    
                 -- Serialize the data into JSON format
                 local clothingDataJson = json.encode(clothingData)
+    
                 -- Send the data to the server to save
                 TriggerServerEvent('ND_AppearanceShops:saveCharacterOutfit', source, clothingData)
             end
         },
+
+    
         {
             title = "Edit name",
             icon = "fa-solid fa-pen-to-square",
@@ -243,10 +248,9 @@ AddEventHandler("onResourceStop", function(resource)
     if resource ~= cache.resource then return end
     SetResourceKvp(wardrobeId, json.encode(wardrobe))
 end)
-
 -- Client-side event to apply the clothing data
-RegisterNetEvent('fivemAppearance:applyCharacterOutfit')
-AddEventHandler('fivemAppearance:applyCharacterOutfit', function(clothingDataJson)
+RegisterNetEvent('ND_AppearanceShops:applyCharacterOutfit')
+AddEventHandler('ND_AppearanceShops:applyCharacterOutfit', function(clothingDataJson, src)
     -- Decode the received JSON data
     local clothingData = json.decode(clothingDataJson)
 
@@ -258,16 +262,48 @@ AddEventHandler('fivemAppearance:applyCharacterOutfit', function(clothingDataJso
     -- Get the player's ped (character)
     local ped = PlayerPedId()
 
-    -- Apply the clothing data to the player's character
-    fivemAppearance:setPedComponents(ped, clothingData.components)
-    fivemAppearance:setPedProps(ped, clothingData.props)
-    fivemAppearance:setPedTattoos(ped, clothingData.tattoos)
-    fivemAppearance:setPedFaceFeatures(ped, clothingData.faceFeatures)
-    fivemAppearance:setPedHeadOverlays(ped, clothingData.headOverlays)
-    fivemAppearance:setPedHair(ped, clothingData.hair)
 
-    print("Clothing data applied to player.")
+        set_model(clothingData)
+
+    
+
+
+    print("Clothing data and model applied to player.")
 end)
+
+-- Register the command 'getOutfit' to request the saved character outfit from the server
+RegisterCommand('getOutfit', function()
+    -- Trigger the server event to get the saved character outfit
+    TriggerServerEvent('ND_AppearanceShops:getCharacterOutfit')
+    print("Requesting saved character outfit...")
+end, false)  -- false means this command doesn't require admin privileges
+
+
+
+function set_model(clothingData)
+    local freemode_model = GetHashKey("mp_m_freemode_01")
+
+    if IsModelInCdimage(freemode_model) and IsModelValid(freemode_model) then
+        RequestModel(freemode_model)
+        while not HasModelLoaded(freemode_model) do
+            Wait(50)
+        end
+
+        SetPlayerModel(PlayerId(), freemode_model)
+        local player_ped = PlayerPedId()
+        -- Apply the model player's character
+        fivemAppearance:setPlayerModel(player_ped, clothingData.model)
+        -- Apply the clothing data to the player's model
+        fivemAppearance:setPedComponents(player_ped, clothingData.components)
+        fivemAppearance:setPedProps(player_ped, clothingData.props)
+        fivemAppearance:setPedTattoos(player_ped, clothingData.tattoos)
+        fivemAppearance:setPedFaceFeatures(player_ped, clothingData.faceFeatures)
+        fivemAppearance:setPedHeadOverlays(player_ped, clothingData.headOverlays)
+        fivemAppearance:setPedHair(player_ped, clothingData.hair)
+    end
+end
+
+
 
 -- Listen for the ND:characterLoaded event (local client event)
 RegisterNetEvent("ND:characterLoaded")
@@ -275,8 +311,10 @@ AddEventHandler("ND:characterLoaded", function(character)
     if character then
         -- Debug output
         print("Character Loaded:", character.metadata, character.lastname)
-    -- Trigger the server to get the saved character outfit
-    TriggerServerEvent('ND_AppearanceShops:getCharacterOutfit')
+        
+        -- Trigger the server to get the saved character outfit
+        TriggerServerEvent('ND_AppearanceShops:getCharacterOutfit')
+        
         -- Call the openWardrobe export from ND_AppearanceShops
         exports["ND_AppearanceShops"]:openWardrobe()
     else
